@@ -13,6 +13,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../context/AuthContext';
 import { AuthStackParamList } from '../navigation/AuthStack';
+import { friendlyAuthError } from '../lib/authErrors';
 
 type Nav = NativeStackNavigationProp<AuthStackParamList, 'Login'>;
 
@@ -36,7 +37,7 @@ export default function LoginScreen() {
     setError(null);
     const err = await signIn(email.trim(), password);
     setLoading(false);
-    if (err) setError(err.message);
+    if (err) setError(friendlyAuthError(err.message));
   };
 
   return (

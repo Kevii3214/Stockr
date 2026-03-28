@@ -13,6 +13,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../context/AuthContext';
 import { AuthStackParamList } from '../navigation/AuthStack';
+import { friendlyAuthError } from '../lib/authErrors';
 
 type Nav = NativeStackNavigationProp<AuthStackParamList, 'SignUp'>;
 
@@ -51,7 +52,7 @@ export default function SignUpScreen() {
     setLoading(false);
 
     if (err) {
-      setError(err.message);
+      setError(friendlyAuthError(err.message));
     } else {
       setSuccess(true);
     }

@@ -1,0 +1,37 @@
+import { Stock } from '../types/stock';
+
+const logo = (ticker: string) =>
+  `https://static2.finnhub.io/file/publicdatany/finnhubimage/stock_logo/${ticker}.png`;
+
+export const DJIA_STOCKS: Stock[] = [
+  { id: 'AAPL', ticker: 'AAPL', company_name: 'Apple Inc.', sector: 'Technology', description: 'Designs and sells consumer electronics, software, and services including iPhone, Mac, and the App Store.', logo_url: logo('AAPL') },
+  { id: 'AMGN', ticker: 'AMGN', company_name: 'Amgen Inc.', sector: 'Healthcare', description: 'Biotechnology company that discovers, develops, and delivers innovative human therapeutics for serious illnesses.', logo_url: logo('AMGN') },
+  { id: 'AMZN', ticker: 'AMZN', company_name: 'Amazon.com Inc.', sector: 'Consumer Discretionary', description: 'Global leader in e-commerce, cloud computing via AWS, digital streaming, and artificial intelligence.', logo_url: logo('AMZN') },
+  { id: 'AXP',  ticker: 'AXP',  company_name: 'American Express Co.', sector: 'Financials', description: 'Global financial services company offering credit cards, charge cards, and travel-related services worldwide.', logo_url: logo('AXP') },
+  { id: 'BA',   ticker: 'BA',   company_name: 'Boeing Co.', sector: 'Industrials', description: 'Designs and manufactures commercial jetliners, military aircraft, satellites, and defense systems.', logo_url: logo('BA') },
+  { id: 'CAT',  ticker: 'CAT',  company_name: 'Caterpillar Inc.', sector: 'Industrials', description: "World's leading manufacturer of construction and mining equipment, diesel engines, and industrial gas turbines.", logo_url: logo('CAT') },
+  { id: 'CRM',  ticker: 'CRM',  company_name: 'Salesforce Inc.', sector: 'Technology', description: 'Cloud-based software company specializing in customer relationship management, analytics, and enterprise applications.', logo_url: logo('CRM') },
+  { id: 'CSCO', ticker: 'CSCO', company_name: 'Cisco Systems Inc.', sector: 'Technology', description: 'Designs and sells networking hardware, software, telecommunications equipment, and cybersecurity solutions.', logo_url: logo('CSCO') },
+  { id: 'CVX',  ticker: 'CVX',  company_name: 'Chevron Corp.', sector: 'Energy', description: "One of the world's leading integrated energy companies, engaged in oil and gas exploration, production, and refining.", logo_url: logo('CVX') },
+  { id: 'DIS',  ticker: 'DIS',  company_name: 'The Walt Disney Co.', sector: 'Communication Services', description: 'Global entertainment and media company operating theme parks, film studios, streaming services, and broadcast networks.', logo_url: logo('DIS') },
+  { id: 'DOW',  ticker: 'DOW',  company_name: 'Dow Inc.', sector: 'Materials', description: 'Leading materials science company delivering performance materials, industrial intermediates, and plastics.', logo_url: logo('DOW') },
+  { id: 'GS',   ticker: 'GS',   company_name: 'Goldman Sachs Group Inc.', sector: 'Financials', description: 'Global investment banking, securities, asset management, and consumer banking firm.', logo_url: logo('GS') },
+  { id: 'HD',   ticker: 'HD',   company_name: 'Home Depot Inc.', sector: 'Consumer Discretionary', description: "World's largest home improvement retailer, selling building materials, appliances, and garden products.", logo_url: logo('HD') },
+  { id: 'HON',  ticker: 'HON',  company_name: 'Honeywell International Inc.', sector: 'Industrials', description: 'Diversified technology and manufacturing company serving aerospace, building technologies, and performance materials.', logo_url: logo('HON') },
+  { id: 'IBM',  ticker: 'IBM',  company_name: 'IBM Corp.', sector: 'Technology', description: 'Multinational technology corporation offering cloud computing, AI via Watson, consulting, and enterprise software.', logo_url: logo('IBM') },
+  { id: 'JNJ',  ticker: 'JNJ',  company_name: 'Johnson & Johnson', sector: 'Healthcare', description: 'Global healthcare company operating across pharmaceuticals, medical devices, and consumer health products.', logo_url: logo('JNJ') },
+  { id: 'JPM',  ticker: 'JPM',  company_name: 'JPMorgan Chase & Co.', sector: 'Financials', description: 'Leading global financial services firm offering investment banking, commercial banking, and asset management.', logo_url: logo('JPM') },
+  { id: 'KO',   ticker: 'KO',   company_name: 'Coca-Cola Co.', sector: 'Consumer Staples', description: "World's largest beverage company, offering more than 500 brands of sparkling and still beverages in over 200 countries.", logo_url: logo('KO') },
+  { id: 'MCD',  ticker: 'MCD',  company_name: "McDonald's Corp.", sector: 'Consumer Discretionary', description: "World's largest fast-food restaurant chain, operating and franchising over 40,000 locations globally.", logo_url: logo('MCD') },
+  { id: 'MMM',  ticker: 'MMM',  company_name: '3M Co.', sector: 'Industrials', description: 'Innovation company applying science to improve lives daily across safety, industrial, transportation, and healthcare markets.', logo_url: logo('MMM') },
+  { id: 'MRK',  ticker: 'MRK',  company_name: 'Merck & Co. Inc.', sector: 'Healthcare', description: 'Global pharmaceutical company discovering and developing medicines, vaccines, biologic therapies, and animal health products.', logo_url: logo('MRK') },
+  { id: 'MSFT', ticker: 'MSFT', company_name: 'Microsoft Corp.', sector: 'Technology', description: 'Global technology company offering cloud services via Azure, productivity software, gaming, and enterprise solutions.', logo_url: logo('MSFT') },
+  { id: 'NKE',  ticker: 'NKE',  company_name: 'Nike Inc.', sector: 'Consumer Discretionary', description: "World's largest designer, marketer, and distributor of athletic footwear, apparel, equipment, and accessories.", logo_url: logo('NKE') },
+  { id: 'NVDA', ticker: 'NVDA', company_name: 'NVIDIA Corp.', sector: 'Technology', description: 'Designs GPUs for gaming, professional visualization, data centers, and AI, and produces system-on-chip units.', logo_url: logo('NVDA') },
+  { id: 'PG',   ticker: 'PG',   company_name: 'Procter & Gamble Co.', sector: 'Consumer Staples', description: 'Global consumer goods company offering branded products across beauty, grooming, health care, fabric, and home care.', logo_url: logo('PG') },
+  { id: 'SHW',  ticker: 'SHW',  company_name: 'Sherwin-Williams Co.', sector: 'Materials', description: 'Leading manufacturer, distributor, and retailer of paints, coatings, and related products worldwide.', logo_url: logo('SHW') },
+  { id: 'TRV',  ticker: 'TRV',  company_name: 'Travelers Companies Inc.', sector: 'Financials', description: 'Leading provider of commercial and personal property and casualty insurance products and services.', logo_url: logo('TRV') },
+  { id: 'UNH',  ticker: 'UNH',  company_name: 'UnitedHealth Group Inc.', sector: 'Healthcare', description: 'Diversified health care company offering health benefits and services through UnitedHealthcare and Optum.', logo_url: logo('UNH') },
+  { id: 'V',    ticker: 'V',    company_name: 'Visa Inc.', sector: 'Financials', description: "World's leader in digital payments, facilitating transactions between consumers, merchants, financial institutions, and governments.", logo_url: logo('V') },
+  { id: 'WMT',  ticker: 'WMT',  company_name: 'Walmart Inc.', sector: 'Consumer Staples', description: "World's largest retailer operating hypermarkets, discount department stores, and grocery stores globally.", logo_url: logo('WMT') },
+];

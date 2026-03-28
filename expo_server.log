@@ -1,0 +1,29 @@
+env: load .env
+env: export EXPO_PUBLIC_FINNHUB_API_KEY EXPO_PUBLIC_SUPABASE_ANON_KEY EXPO_PUBLIC_SUPABASE_URL
+Starting project at C:\Users\Jolte\OneDrive\Desktop\Stockr
+Starting Metro Bundler
+
+warning: Bundler cache is empty, rebuilding (this may take a minute)
+Dependency validation might be unreliable when using canary SDK versions
+The following packages should be updated for best compatibility with the installed expo version:
+  @react-native-async-storage/async-storage@3.0.2 - expected version: 2.2.0
+  expo-secure-store@55.0.10-canary-20260328-2049187 - expected version: 55.0.10-canary-20260327-0789fbc
+  react-native-safe-area-context@5.7.0 - expected version: ~5.6.2
+  react-native-screens@4.24.0 - expected version: ~4.23.0
+  react-native-worklets@0.8.1 - expected version: 0.7.2
+Your project may not work correctly until you install the expected versions of the packages.
+Waiting on http://localhost:8081
+Logs for your project will appear below.
+Web .\index.ts ▓▓▓▓▓▓▓▓░░░░░░░░ 51.8% (59/82)
+Web .\index.ts ▓▓▓▓▓▓▓▓░░░░░░░░ 55.3% (128/184)
+Web .\index.ts ▓▓▓▓▓▓▓▓▓▓▓▓░░░░ 79.1% (353/397)
+Web .\index.ts ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Web .\index.ts ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 90.8% (609/639)
+Web .\index.ts ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Web Bundled 13646ms index.ts (675 modules)
+Web Bundled 5533ms index.ts (1 module)
+ LOG  [web] Logs will appear in the browser console
+ LOG  [web] Logs will appear in the browser console
+Web .\index.ts ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Web Bundled 78ms index.ts (1 module)
+ LOG  [web] Logs will appear in the browser console

@@ -1,10 +1,15 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Dimensions, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import Swiper from 'react-native-deck-swiper';
 import { NavigationContainer } from '@react-navigation/native';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { StockDataProvider, useStockData } from './context/StockDataContext';
+import { WatchlistProvider, useWatchlist } from './context/WatchlistContext';
 import { AuthStack } from './navigation/AuthStack';
+import StockCard from './components/StockCard';
+import WatchlistScreen from './screens/WatchlistScreen';
+import { StockWithLive } from './types/stock';
 
 const CONTAINER_WIDTH = Platform.OS === 'web' ? 390 : Dimensions.get('window').width;
 const CARD_MARGIN = 20;
@@ -121,8 +126,26 @@ function PlaceholderScreen({ title }: { title: string }) {
   );
 }
 
-const makeBatch = (offset: number, size = 10) =>
-  Array.from({ length: size }, (_, i) => offset + i);
+function ProfileScreen() {
+  const { signOut } = useAuth();
+  return (
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+      <TouchableOpacity
+        onPress={signOut}
+        style={{
+          backgroundColor: '#7c6af7',
+          paddingVertical: 14,
+          paddingHorizontal: 40,
+          borderRadius: 12,
+        }}
+      >
+        <Text style={{ color: '#ffffff', fontSize: 16, fontWeight: '600', letterSpacing: 0.5 }}>
+          Log Out
+        </Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
 
 const overlayLabelStyle = {
   fontSize: 42,
@@ -135,25 +158,51 @@ const overlayLabelStyle = {
 };
 
 function SwipeScreen() {
-  const swiperRef = useRef<Swiper<number>>(null);
-  const [cards, setCards] = useState(() => makeBatch(0));
+  const { stocks, loading, error } = useStockData();
+  const { tickers: watchlistTickers, addToWatchlist } = useWatchlist();
+  const swiperRef = useRef<Swiper<StockWithLive>>(null);
+  const [cards, setCards] = useState<StockWithLive[]>([]);
   const [lastAction, setLastAction] = useState<string | null>(null);
   const [swiperHeight, setSwiperHeight] = useState(0);
 
   const BOTTOM_GAP = 16;
   const cardHeight = swiperHeight > 0 ? swiperHeight - CARD_MARGIN * 2 - BOTTOM_GAP : 0;
 
+  // Populate cards once live data finishes loading, excluding watchlisted stocks
+  useEffect(() => {
+    if (!loading && stocks.length > 0 && cards.length === 0) {
+      const watchlistSet = new Set(watchlistTickers);
+      setCards(stocks.filter(s => !watchlistSet.has(s.ticker)));
+    }
+  }, [loading, stocks]);
+
+  if (error) {
+    return (
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32 }}>
+        <Text style={{ color: '#FF4458', fontSize: 14, textAlign: 'center', lineHeight: 22 }}>{error}</Text>
+      </View>
+    );
+  }
+
+  if (loading || cards.length === 0) {
+    return (
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+        <ActivityIndicator size="large" color="#7c6af7" />
+        <Text style={{ color: '#7878a0', fontSize: 13, marginTop: 12, letterSpacing: 0.5 }}>
+          Loading stocks…
+        </Text>
+      </View>
+    );
+  }
+
   return (
     <>
-      <View style={{ height: 22 }}>
-        {lastAction && (
-          <Text style={[
-            styles.lastAction,
-            { color: lastAction === 'ACCEPTED' ? '#4DED30' : '#FF4458' },
-          ]}>
+      <View style={{ height: 22, alignItems: 'center', justifyContent: 'center' }}>
+        {lastAction ? (
+          <Text style={[styles.lastAction, { color: lastAction === 'ADDED' ? '#4DED30' : '#FF4458' }]}>
             {lastAction}
           </Text>
-        )}
+        ) : null}
       </View>
 
       <View
@@ -165,12 +214,20 @@ function SwipeScreen() {
             ref={swiperRef}
             cards={cards}
             cardIndex={0}
-            renderCard={() => <View style={styles.card} />}
-            onSwipedRight={() => setLastAction('ACCEPTED')}
-            onSwipedLeft={() => setLastAction('REJECTED')}
+            renderCard={(card) => (
+              <StockCard stock={card} cardHeight={cardHeight} />
+            )}
+            onSwipedRight={(cardIndex) => {
+              const stock = cards[cardIndex];
+              if (stock) addToWatchlist(stock.ticker);
+              setLastAction('ADDED');
+            }}
+            onSwipedLeft={() => setLastAction('PASSED')}
             onSwiped={index => {
-              if (index === cards.length - 3)
-                setCards(prev => [...prev, ...makeBatch(prev.length)]);
+              if (index >= cards.length - 5) {
+                const watchlistSet = new Set(watchlistTickers);
+                setCards(prev => [...prev, ...stocks.filter(s => !watchlistSet.has(s.ticker))]);
+              }
             }}
             onSwipedAborted={() => setLastAction(null)}
             backgroundColor="transparent"
@@ -274,10 +331,10 @@ function MainApp() {
         <Text style={styles.title}>{SCREEN_TITLES[activeTab]}</Text>
 
         {activeTab === 'swipe'     && <SwipeScreen />}
-        {activeTab === 'watchlist' && <PlaceholderScreen title="Watchlist" />}
+        {activeTab === 'watchlist' && <WatchlistScreen />}
         {activeTab === 'portfolio' && <PlaceholderScreen title="Portfolio" />}
         {activeTab === 'explore'   && <PlaceholderScreen title="Explore" />}
-        {activeTab === 'profile'   && <PlaceholderScreen title="Profile" />}
+        {activeTab === 'profile'   && <ProfileScreen />}
 
         <TabBar active={activeTab} onPress={setActiveTab} />
       </View>
@@ -304,7 +361,11 @@ export default function App() {
   return (
     <NavigationContainer>
       <AuthProvider>
-        <RootNavigator />
+        <StockDataProvider>
+          <WatchlistProvider>
+            <RootNavigator />
+          </WatchlistProvider>
+        </StockDataProvider>
       </AuthProvider>
     </NavigationContainer>
   );
@@ -345,16 +406,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     letterSpacing: 2,
     fontWeight: 'bold',
-  },
-  card: {
-    flex: 1,
-    borderRadius: 16,
-    backgroundColor: '#ffffff',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
   },
   tabBar: {
     height: TAB_BAR_HEIGHT,
