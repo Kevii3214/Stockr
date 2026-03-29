@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Stockr",
-    "slug": "Stockr",
+    "slug": "stockr",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -15,6 +15,7 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.stockr.app",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -25,6 +26,15 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "expo-secure-store"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "10f11105-d860-42ed-9ff6-97c871cbf75d"
+      }
+    },
+    "owner": "shu3214s-organization"
   }
 }

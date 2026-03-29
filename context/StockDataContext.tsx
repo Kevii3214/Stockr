@@ -125,6 +125,15 @@ export function StockDataProvider({ children }: { children: React.ReactNode }) {
   // Static stock list is hardcoded — no DB query needed
   const tickers = DJIA_STOCKS.map(s => s.ticker);
 
+  // For crypto, API symbols differ from the display ticker.
+  // Falls back to ticker for stocks and ETFs that have no override.
+  const finnhubSymbolFor = (ticker: string): string =>
+    DJIA_STOCKS.find(s => s.ticker === ticker)?.finnhub_symbol ?? ticker;
+  const yahooSymbolFor = (ticker: string): string =>
+    DJIA_STOCKS.find(s => s.ticker === ticker)?.yahoo_symbol ?? ticker;
+  // Reverse map: finnhub symbol -> canonical ticker (for WebSocket tick routing)
+  const finnhubToTicker = new Map(tickers.map(t => [finnhubSymbolFor(t), t]));
+
   // 1. Fetch initial live data from Finnhub + fundamentals from Supabase
   useEffect(() => {
     if (!FINNHUB_KEY || FINNHUB_KEY === 'your_finnhub_key_here') {
@@ -135,11 +144,11 @@ export function StockDataProvider({ children }: { children: React.ReactNode }) {
 
     (async () => {
       // Finnhub quotes — rate-limited, run first
-      const quoteMap = await parallelBatch(tickers, fetchQuote);
+      const quoteMap = await parallelBatch(tickers, t => fetchQuote(finnhubSymbolFor(t)));
 
       // Candles (Supabase Edge Function) and fundamentals (Supabase DB) — both hit Supabase, run in parallel
       const [candleMap, fundsMap] = await Promise.all([
-        parallelBatch(tickers, fetchCandles),
+        parallelBatch(tickers, t => fetchCandles(yahooSymbolFor(t))),
         loadFundamentals(),
       ]);
 
@@ -177,7 +186,7 @@ export function StockDataProvider({ children }: { children: React.ReactNode }) {
 
     ws.onopen = () => {
       for (const ticker of tickers) {
-        ws.send(JSON.stringify({ type: 'subscribe', symbol: ticker }));
+        ws.send(JSON.stringify({ type: 'subscribe', symbol: finnhubSymbolFor(ticker) }));
       }
     };
 
@@ -187,7 +196,8 @@ export function StockDataProvider({ children }: { children: React.ReactNode }) {
         if (msg.type === 'trade' && Array.isArray(msg.data)) {
           for (const trade of msg.data) {
             if (typeof trade.p === 'number' && trade.p > 0) {
-              tickBufRef.current.set(trade.s as string, trade.p as number);
+              const canonical = finnhubToTicker.get(trade.s as string) ?? (trade.s as string);
+              tickBufRef.current.set(canonical, trade.p as number);
             }
           }
         }
@@ -229,7 +239,7 @@ export function StockDataProvider({ children }: { children: React.ReactNode }) {
     if (!FINNHUB_KEY || FINNHUB_KEY === 'your_finnhub_key_here') return;
 
     const pollId = setInterval(async () => {
-      const candleMap = await parallelBatch(tickers, fetchCandles);
+      const candleMap = await parallelBatch(tickers, t => fetchCandles(yahooSymbolFor(t)));
       setLiveData(prev => {
         const next = new Map(prev);
         candleMap.forEach((candles, ticker) => {

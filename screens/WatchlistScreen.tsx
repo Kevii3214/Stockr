@@ -10,6 +10,8 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import BuyModal from '../components/BuyModal';
+import StockDetailModal from '../components/StockDetailModal';
 import { useStockData } from '../context/StockDataContext';
 import { useWatchlist } from '../context/WatchlistContext';
 import { Stock, StockWithLive } from '../types/stock';
@@ -70,10 +72,14 @@ function ChangeText({ changePercent }: { changePercent: number }) {
 
 // ─── Watchlist Row ────────────────────────────────────────────────────────────
 
-function WatchlistRow({ stockWithLive, onRemove }: { stockWithLive: StockWithLive; onRemove: () => void }) {
+function WatchlistRow({ stockWithLive, onPress, onRemove }: {
+  stockWithLive: StockWithLive;
+  onPress: () => void;
+  onRemove: () => void;
+}) {
   const { live } = stockWithLive;
   return (
-    <View style={styles.row}>
+    <TouchableOpacity style={styles.row} onPress={onPress} activeOpacity={0.75}>
       <StockLogo stock={stockWithLive} size={44} />
       <View style={styles.rowInfo}>
         <Text style={styles.rowCompany} numberOfLines={1}>{stockWithLive.company_name}</Text>
@@ -96,7 +102,7 @@ function WatchlistRow({ stockWithLive, onRemove }: { stockWithLive: StockWithLiv
           <View style={[styles.removeLine, { transform: [{ rotate: '-45deg' }], position: 'absolute' }]} />
         </View>
       </TouchableOpacity>
-    </View>
+    </TouchableOpacity>
   );
 }
 
@@ -166,6 +172,8 @@ export default function WatchlistScreen() {
   const { tickers, loading, addToWatchlist, removeFromWatchlist, clearWatchlist, isInWatchlist } = useWatchlist();
   const [query, setQuery] = useState('');
   const [searchFocused, setSearchFocused] = useState(false);
+  const [selectedStock, setSelectedStock] = useState<StockWithLive | null>(null);
+  const [buyStock, setBuyStock] = useState<StockWithLive | null>(null);
 
   const q = query.trim().toLowerCase();
 
@@ -188,6 +196,17 @@ export default function WatchlistScreen() {
 
   return (
     <View style={styles.container}>
+      <StockDetailModal
+        stock={selectedStock}
+        onClose={() => setSelectedStock(null)}
+        onBuy={s => { setSelectedStock(null); setBuyStock(s); }}
+      />
+      <BuyModal
+        visible={!!buyStock}
+        stock={buyStock}
+        onClose={() => setBuyStock(null)}
+        mode="buy"
+      />
       {/* Search bar */}
       <View style={[styles.searchBar, searchFocused && styles.searchBarFocused]}>
         <View style={styles.searchIcon}>
@@ -262,6 +281,7 @@ export default function WatchlistScreen() {
             <WatchlistRow
               key={stock.ticker}
               stockWithLive={stock}
+              onPress={() => setSelectedStock(stock)}
               onRemove={() => removeFromWatchlist(stock.ticker)}
             />
           ))}

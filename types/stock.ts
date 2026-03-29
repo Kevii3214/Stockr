@@ -5,6 +5,8 @@ export interface Stock {
   sector: string | null;
   description: string | null;
   logo_url: string | null;
+  finnhub_symbol?: string;  // Only for crypto: e.g. "BINANCE:BTCUSDT"
+  yahoo_symbol?: string;    // Only for crypto: e.g. "BTC-USD"
 }
 
 export interface StockLiveData {

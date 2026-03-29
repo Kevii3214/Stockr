@@ -6,9 +6,15 @@ import { NavigationContainer } from '@react-navigation/native';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { StockDataProvider, useStockData } from './context/StockDataContext';
 import { WatchlistProvider, useWatchlist } from './context/WatchlistContext';
+import { PortfolioProvider } from './context/PortfolioContext';
+import { RecommendationProvider, useRecommendation } from './context/RecommendationContext';
+import { PostsProvider } from './context/PostsContext';
+import { PlanProvider } from './context/PlanContext';
 import { AuthStack } from './navigation/AuthStack';
 import StockCard from './components/StockCard';
 import WatchlistScreen from './screens/WatchlistScreen';
+import PortfolioScreen from './screens/PortfolioScreen';
+import ExploreScreen from './screens/ExploreScreen';
 import { StockWithLive } from './types/stock';
 
 const CONTAINER_WIDTH = Platform.OS === 'web' ? 390 : Dimensions.get('window').width;
@@ -157,9 +163,13 @@ const overlayLabelStyle = {
   overflow: 'hidden' as const,
 };
 
+const REPLENISH_THRESHOLD = 5;
+const BATCH_SIZE = 20;
+
 function SwipeScreen() {
   const { stocks, loading, error } = useStockData();
   const { tickers: watchlistTickers, addToWatchlist } = useWatchlist();
+  const { getNextBatch, recordSwipe } = useRecommendation();
   const swiperRef = useRef<Swiper<StockWithLive>>(null);
   const [cards, setCards] = useState<StockWithLive[]>([]);
   const [lastAction, setLastAction] = useState<string | null>(null);
@@ -168,11 +178,11 @@ function SwipeScreen() {
   const BOTTOM_GAP = 16;
   const cardHeight = swiperHeight > 0 ? swiperHeight - CARD_MARGIN * 2 - BOTTOM_GAP : 0;
 
-  // Populate cards once live data finishes loading, excluding watchlisted stocks
+  // Build initial deck once stocks are loaded
   useEffect(() => {
     if (!loading && stocks.length > 0 && cards.length === 0) {
-      const watchlistSet = new Set(watchlistTickers);
-      setCards(stocks.filter(s => !watchlistSet.has(s.ticker)));
+      const exclude = new Set(watchlistTickers);
+      setCards(getNextBatch(exclude, BATCH_SIZE * 2));
     }
   }, [loading, stocks]);
 
@@ -219,14 +229,21 @@ function SwipeScreen() {
             )}
             onSwipedRight={(cardIndex) => {
               const stock = cards[cardIndex];
-              if (stock) addToWatchlist(stock.ticker);
+              if (stock) {
+                addToWatchlist(stock.ticker);
+                recordSwipe(stock.ticker, 'right');
+              }
               setLastAction('ADDED');
             }}
-            onSwipedLeft={() => setLastAction('PASSED')}
-            onSwiped={index => {
-              if (index >= cards.length - 5) {
-                const watchlistSet = new Set(watchlistTickers);
-                setCards(prev => [...prev, ...stocks.filter(s => !watchlistSet.has(s.ticker))]);
+            onSwipedLeft={(cardIndex) => {
+              const stock = cards[cardIndex];
+              if (stock) recordSwipe(stock.ticker, 'left');
+              setLastAction('PASSED');
+            }}
+            onSwiped={(index) => {
+              if (index >= cards.length - REPLENISH_THRESHOLD) {
+                const exclude = new Set([...watchlistTickers, ...cards.map(c => c.ticker)]);
+                setCards(prev => [...prev, ...getNextBatch(exclude, BATCH_SIZE)]);
               }
             }}
             onSwipedAborted={() => setLastAction(null)}
@@ -328,12 +345,14 @@ function MainApp() {
       <View style={styles.container}>
         <StatusBar style="light" />
 
-        <Text style={styles.title}>{SCREEN_TITLES[activeTab]}</Text>
+        {activeTab !== 'portfolio' && activeTab !== 'explore' && (
+          <Text style={styles.title}>{SCREEN_TITLES[activeTab]}</Text>
+        )}
 
         {activeTab === 'swipe'     && <SwipeScreen />}
         {activeTab === 'watchlist' && <WatchlistScreen />}
-        {activeTab === 'portfolio' && <PlaceholderScreen title="Portfolio" />}
-        {activeTab === 'explore'   && <PlaceholderScreen title="Explore" />}
+        {activeTab === 'portfolio' && <PortfolioScreen />}
+        {activeTab === 'explore'   && <ExploreScreen />}
         {activeTab === 'profile'   && <ProfileScreen />}
 
         <TabBar active={activeTab} onPress={setActiveTab} />
@@ -363,7 +382,15 @@ export default function App() {
       <AuthProvider>
         <StockDataProvider>
           <WatchlistProvider>
-            <RootNavigator />
+            <PortfolioProvider>
+              <RecommendationProvider>
+                <PostsProvider>
+                  <PlanProvider>
+                    <RootNavigator />
+                  </PlanProvider>
+                </PostsProvider>
+              </RecommendationProvider>
+            </PortfolioProvider>
           </WatchlistProvider>
         </StockDataProvider>
       </AuthProvider>

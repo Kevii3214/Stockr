@@ -11,6 +11,8 @@ const FINNHUB_KEY = process.env.EXPO_PUBLIC_FINNHUB_API_KEY ?? '';
 interface StockCardProps {
   stock: StockWithLive;
   cardHeight: number;
+  initialShowDetails?: boolean;
+  onClose?: () => void;
 }
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
@@ -139,14 +141,7 @@ function DetailsContent({
   const betaInfo    = betaLabel(fundamentals?.beta ?? null);
 
   return (
-    <ScrollView
-      style={{ flex: 1 }}
-      contentContainerStyle={detailStyles.scrollContent}
-      showsVerticalScrollIndicator={false}
-      nestedScrollEnabled
-      // Only lock vertical scroll so horizontal swipes still reach the card swiper
-      directionalLockEnabled
-    >
+    <View>
       {/* ── Price Action ── */}
       <SectionHeader title="Price Action" />
 
@@ -241,16 +236,16 @@ function DetailsContent({
       ) : null}
 
       <View style={{ height: 16 }} />
-    </ScrollView>
+    </View>
   );
 }
 
 // ─── StockCard ────────────────────────────────────────────────────────────────
 
-export default function StockCard({ stock, cardHeight }: StockCardProps) {
+export default function StockCard({ stock, cardHeight, initialShowDetails = false, onClose }: StockCardProps) {
   const [logoError, setLogoError] = useState(false);
   const [chartWidth, setChartWidth] = useState(0);
-  const [showDetails, setShowDetails] = useState(false);
+  const [showDetails, setShowDetails] = useState(initialShowDetails);
   const [fetchedFundamentals, setFetchedFundamentals] = useState<StockFundamentals | null>(null);
   const fetchedRef = useRef(false);
 
@@ -261,7 +256,14 @@ export default function StockCard({ stock, cardHeight }: StockCardProps) {
   const positive     = live ? live.changePercent >= 0 : true;
   const priceColor   = positive ? '#4DED30' : '#FF4458';
 
-  const chartHeight = Math.max(Math.floor(cardHeight * 0.28), 55);
+  const chartHeight = Math.max(Math.floor(cardHeight * 0.22), 55);
+
+  // Overview section animates between a "full card" height and a compact height
+  const overviewExpanded  = cardHeight - 80;
+  const overviewCollapsed = Math.floor(cardHeight * 0.44);
+  const overviewAnim = useRef(new Animated.Value(
+    initialShowDetails ? overviewCollapsed : overviewExpanded
+  )).current;
 
   // When the details tab is opened and no fundamentals are in the DB, fetch from Finnhub directly
   useEffect(() => {
@@ -286,6 +288,21 @@ export default function StockCard({ stock, cardHeight }: StockCardProps) {
       })
       .catch(() => {});
   }, [showDetails]);
+
+  const handleInfoPress = () => {
+    // If onClose is provided and details are showing, ✕ exits the whole view
+    if (showDetails && onClose) {
+      onClose();
+      return;
+    }
+    setShowDetails(v => !v);
+    Animated.spring(overviewAnim, {
+      toValue: showDetails ? overviewExpanded : overviewCollapsed,
+      useNativeDriver: false,
+      friction: 9,
+      tension: 60,
+    }).start();
+  };
 
   return (
     <View style={[styles.card, { height: cardHeight }]}>
@@ -317,85 +334,89 @@ export default function StockCard({ stock, cardHeight }: StockCardProps) {
         ) : null}
       </View>
 
-      {/* ── Tab toggle ── */}
-      <View style={styles.tabRow}>
-        <TouchableOpacity
-          style={[styles.tabBtn, !showDetails && styles.tabBtnActive]}
-          onPress={() => setShowDetails(false)}
-          activeOpacity={0.7}
-        >
-          <Text style={[styles.tabBtnText, !showDetails && styles.tabBtnTextActive]}>Overview</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tabBtn, showDetails && styles.tabBtnActive]}
-          onPress={() => setShowDetails(true)}
-          activeOpacity={0.7}
-        >
-          <Text style={[styles.tabBtnText, showDetails && styles.tabBtnTextActive]}>Details</Text>
-        </TouchableOpacity>
-      </View>
+      {/* ── Overview ── */}
+      <Animated.View style={[styles.overviewSection, { height: overviewAnim, overflow: 'hidden' }]}>
 
-      {/* ── Content ── */}
-      {!showDetails ? (
-        <View style={{ flex: 1, justifyContent: 'space-between', paddingBottom: 12 }}>
-
-          {/* Price */}
-          <View style={styles.priceSection}>
-            {live ? (
-              <>
-                <Text style={styles.price}>
-                  ${live.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+        {/* Price */}
+        <View style={styles.priceSection}>
+          {live ? (
+            <>
+              <Text style={styles.price}>
+                ${live.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </Text>
+              <View style={styles.changeRow}>
+                <Text style={[styles.changePct, { color: priceColor }]}>
+                  {positive ? '▲' : '▼'} {Math.abs(live.changePercent).toFixed(2)}%
                 </Text>
-                <View style={styles.changeRow}>
-                  <Text style={[styles.changePct, { color: priceColor }]}>
-                    {positive ? '▲' : '▼'} {Math.abs(live.changePercent).toFixed(2)}%
-                  </Text>
-                  <Text style={[styles.changeAbs, { color: priceColor }]}>
-                    ({live.changePercent >= 0 ? '+' : ''}{(live.price - live.prevClose).toFixed(2)})
-                  </Text>
-                </View>
-              </>
-            ) : (
-              <View style={{ gap: 10 }}>
-                <SkeletonBar width={130} height={38} />
-                <SkeletonBar width={90} height={18} />
+                <Text style={[styles.changeAbs, { color: priceColor }]}>
+                  ({live.changePercent >= 0 ? '+' : ''}{(live.price - live.prevClose).toFixed(2)})
+                </Text>
               </View>
-            )}
-          </View>
-
-          {/* Chart */}
-          <View
-            style={{ height: chartHeight, borderRadius: 8, overflow: 'hidden' }}
-            onLayout={e => setChartWidth(e.nativeEvent.layout.width)}
-          >
-            {live && chartWidth > 0 ? (
-              <Sparkline data={live.candles} width={chartWidth} height={chartHeight} positive={positive} />
-            ) : (
-              <SkeletonBar width="100%" height={chartHeight} />
-            )}
-          </View>
-
-          {/* Description */}
-          <View>
-            {stock.description ? (
-              <Text style={styles.description} numberOfLines={4}>{stock.description}</Text>
-            ) : (
-              <View style={{ gap: 7 }}>
-                <SkeletonBar width="100%" height={12} />
-                <SkeletonBar width="82%" height={12} />
-                <SkeletonBar width="65%" height={12} />
-              </View>
-            )}
-          </View>
-
+            </>
+          ) : (
+            <View style={{ gap: 10 }}>
+              <SkeletonBar width={130} height={38} />
+              <SkeletonBar width={90} height={18} />
+            </View>
+          )}
         </View>
-      ) : (
-        <DetailsContent
-          live={live}
-          fundamentals={fundamentals}
-          description={stock.description}
-        />
+
+        {/* Chart */}
+        <View
+          style={{ height: chartHeight, borderRadius: 8, overflow: 'hidden' }}
+          onLayout={e => setChartWidth(e.nativeEvent.layout.width)}
+        >
+          {live && chartWidth > 0 ? (
+            <Sparkline data={live.candles} width={chartWidth} height={chartHeight} positive={positive} />
+          ) : (
+            <SkeletonBar width="100%" height={chartHeight} />
+          )}
+        </View>
+
+        {/* Description */}
+        <View>
+          {stock.description ? (
+            <Text style={styles.description} numberOfLines={3}>{stock.description}</Text>
+          ) : (
+            <View style={{ gap: 7 }}>
+              <SkeletonBar width="100%" height={12} />
+              <SkeletonBar width="82%" height={12} />
+              <SkeletonBar width="65%" height={12} />
+            </View>
+          )}
+        </View>
+
+      </Animated.View>
+
+      {/* ── Details (dedicated scroll area filling remaining card space) ── */}
+      {showDetails && (
+        <>
+          <View style={styles.detailsDivider} />
+          <ScrollView
+            style={styles.detailsScroll}
+            contentContainerStyle={styles.detailsScrollContent}
+            showsVerticalScrollIndicator={false}
+            bounces={false}
+            overScrollMode="never"
+          >
+            <DetailsContent
+              live={live}
+              fundamentals={fundamentals}
+              description={stock.description}
+            />
+          </ScrollView>
+        </>
       )}
+
+      {/* ── Info button ── */}
+      <TouchableOpacity
+        style={styles.infoBtn}
+        onPress={handleInfoPress}
+        activeOpacity={0.7}
+        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+      >
+        <Text style={styles.infoBtnText}>{showDetails ? '✕' : 'i'}</Text>
+      </TouchableOpacity>
 
     </View>
   );
@@ -464,32 +485,41 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     letterSpacing: 0.4,
   },
-  // ── Tab toggle ──
-  tabRow: {
-    flexDirection: 'row',
-    backgroundColor: '#0e0e20',
-    borderRadius: 10,
-    padding: 3,
-    marginTop: 14,
-    marginBottom: 14,
-  },
-  tabBtn: {
+  // ── Details scroll area ──
+  detailsScroll: {
     flex: 1,
-    paddingVertical: 7,
-    borderRadius: 8,
+  },
+  detailsScrollContent: {
+    paddingBottom: 44,
+  },
+  overviewSection: {
+    gap: 14,
+    paddingTop: 16,
+  },
+  detailsDivider: {
+    height: 1,
+    backgroundColor: '#22223a',
+    marginVertical: 20,
+  },
+  // ── Info button ──
+  infoBtn: {
+    position: 'absolute',
+    bottom: 8,
+    right: 8,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#1e1e38',
+    borderWidth: 1,
+    borderColor: '#7c6af7',
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  tabBtnActive: {
-    backgroundColor: '#7c6af7',
-  },
-  tabBtnText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#44445a',
-    letterSpacing: 0.3,
-  },
-  tabBtnTextActive: {
-    color: '#ffffff',
+  infoBtnText: {
+    color: '#7c6af7',
+    fontSize: 13,
+    fontWeight: '800',
+    letterSpacing: 0,
   },
   // ── Overview content ──
   priceSection: {
@@ -528,9 +558,6 @@ const styles = StyleSheet.create({
 // ─── Detail tab styles ────────────────────────────────────────────────────────
 
 const detailStyles = StyleSheet.create({
-  scrollContent: {
-    paddingBottom: 4,
-  },
   sectionHeader: {
     color: '#7878a0',
     fontSize: 10,

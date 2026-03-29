@@ -18,7 +18,7 @@ Deno.serve(async (req: Request) => {
   const url = new URL(req.url);
   const ticker = url.searchParams.get('ticker');
 
-  if (!ticker || !/^[A-Z]{1,5}$/.test(ticker)) {
+  if (!ticker || !/^[A-Z0-9]{1,5}(-[A-Z]{2,4})?$/.test(ticker)) {
     return new Response(JSON.stringify({ error: 'invalid ticker' }), {
       status: 400,
       headers: { ...CORS, 'Content-Type': 'application/json' },
