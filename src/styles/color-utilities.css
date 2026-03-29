@@ -1,0 +1,54 @@
+/* Semantic color utility classes for Stockr */
+
+@layer utilities {
+  /* Success/Positive colors (green) */
+  .text-success {
+    color: hsl(var(--success));
+  }
+  .bg-success {
+    background-color: hsl(var(--success));
+  }
+  .bg-success\/10 {
+    background-color: hsl(var(--success) / 0.1);
+  }
+  .bg-success\/20 {
+    background-color: hsl(var(--success) / 0.2);
+  }
+  .bg-success\/30 {
+    background-color: hsl(var(--success) / 0.3);
+  }
+  .border-success {
+    border-color: hsl(var(--success));
+  }
+  .hover\:bg-success:hover {
+    background-color: hsl(var(--success));
+  }
+  .hover\:bg-success\/30:hover {
+    background-color: hsl(var(--success) / 0.3);
+  }
+
+  /* Warning/XP colors (gold) */
+  .text-warning {
+    color: hsl(var(--warning));
+  }
+  .bg-warning {
+    background-color: hsl(var(--warning));
+  }
+  .bg-warning\/10 {
+    background-color: hsl(var(--warning) / 0.1);
+  }
+  .bg-warning\/20 {
+    background-color: hsl(var(--warning) / 0.2);
+  }
+  .border-warning {
+    border-color: hsl(var(--warning));
+  }
+
+  /* Font families */
+  .font-heading {
+    font-family: var(--font-heading);
+  }
+  .font-mono {
+    font-family: var(--font-mono);
+  }
+}

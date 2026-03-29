@@ -1,0 +1,183 @@
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+    outline-color: hsl(var(--ring) / 0.5);
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    /* Prevent horizontal scrolling */
+    max-width: 100vw;
+    overflow-x: hidden;
+    /* Support for safe areas on iOS devices */
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+
+  /**
+  * Default typography styles for HTML elements (h1-h4, p, label, button, input).
+  * These are in @layer base, so Tailwind utility classes (like text-sm, text-lg) automatically override them.
+  */
+
+  html {
+    font-size: var(--font-size);
+    /* Prevent horizontal scrolling */
+    overflow-x: hidden;
+    /* Enable smooth scrolling */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* Prevent zoom on input focus for iOS */
+    touch-action: manipulation;
+  }
+
+  h1 {
+    font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: var(--text-2xl);
+    font-weight: var(--font-weight-bold);
+    line-height: 1.5;
+  }
+
+  h2 {
+    font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: var(--text-xl);
+    font-weight: var(--font-weight-semibold);
+    line-height: 1.5;
+  }
+
+  h3 {
+    font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: var(--text-lg);
+    font-weight: var(--font-weight-semibold);
+    line-height: 1.5;
+  }
+
+  h4 {
+    font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-semibold);
+    line-height: 1.5;
+  }
+
+  label {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  button {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+    /* Ensure touch targets are accessible */
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  input {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-normal);
+    line-height: 1.5;
+    /* Prevent zoom on iOS */
+    font-size: 16px;
+  }
+}
+
+/* Hide scrollbars globally */
+.scrollbar-hide::-webkit-scrollbar,
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;
+  width: 0;
+}
+.scrollbar-hide,
+html,
+body {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+:root {
+    /* Color Palette */
+    --background: 223 47% 11%;
+    --foreground: 213 31% 91%;
+
+    --muted: 223 47% 15%;
+    --muted-foreground: 215.4 16.3% 56.9%;
+
+    --popover: 224 71% 4%;
+    --popover-foreground: 215 20.2% 65.1%;
+
+    --card: 221 39% 18%;
+    --card-foreground: 213 31% 91%;
+
+    --border: 216 34% 22%;
+    --input: 216 34% 22%;
+
+    /* Primary - Your brand navy #2C3863 */
+    --primary: 221 39% 28%;
+    --primary-foreground: 210 40% 98%;
+
+    /* Secondary accent - Electric Blue for CTAs */
+    --secondary: 217 91% 60%;
+    --secondary-foreground: 210 40% 98%;
+
+    /* Success/Positive - Bright Green */
+    --success: 142 71% 45%;
+    --success-foreground: 210 40% 98%;
+
+    /* Destructive/Negative - Vibrant Red */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+
+    /* Accent - Purple for special features */
+    --accent: 258 90% 66%;
+    --accent-foreground: 210 40% 98%;
+
+    /* Warning/XP - Warm Gold */
+    --warning: 38 92% 50%;
+    --warning-foreground: 221 39% 11%;
+
+    --ring: 221 39% 28%;
+    --radius: 0.5rem;
+
+    /* Chart colors */
+    --chart-1: 217 91% 60%; /* Electric Blue */
+    --chart-2: 142 71% 45%; /* Bright Green */
+    --chart-3: 0 84% 60%; /* Vibrant Red */
+    --chart-4: 38 92% 50%; /* Warm Gold */
+    --chart-5: 258 90% 66%; /* Purple */
+
+    /* Typography */
+    --font-size: 16px;
+    --text-xs: 0.75rem;
+    --text-sm: 0.875rem;
+    --text-base: 1rem;
+    --text-lg: 1.125rem;
+    --text-xl: 1.25rem;
+    --text-2xl: 1.5rem;
+    --text-3xl: 1.875rem;
+    --text-4xl: 2.25rem;
+
+    /* Font weights */
+    --font-weight-normal: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+    --font-weight-extrabold: 800;
+
+    /* Font families */
+    --font-heading: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+  }
+
+/* Custom animations */
+@keyframes shine {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 200%;
+  }
+}
